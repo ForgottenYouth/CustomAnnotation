@@ -1,0 +1,5 @@
+include ':CustomButterKnife'
+include ':CusProcessor'
+include ':CusAnnotation'
+include ':app'
+rootProject.name = "CustomAnnotation"
