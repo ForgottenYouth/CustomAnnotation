@@ -6,6 +6,7 @@ import android.os.Bundle;
 import android.widget.TextView;
 
 import com.leon.annotation.BindView;
+import com.leon.annotation.ViewOnClick;
 import com.leon.custombutterknife.CustomButterKnife;
 
 public class MainActivity extends AppCompatActivity {
@@ -33,5 +34,10 @@ public class MainActivity extends AppCompatActivity {
         if (mSchool != null) {
             mSchool.setText("学校");
         }
+    }
+
+    @ViewOnClick(viewId=R.id.name)
+    public void onClick(int viewId){
+
     }
 }
