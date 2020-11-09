@@ -15,6 +15,7 @@ public class CustomButterKnife {
         String activityName = activity.getClass().getName();
         String genrateClass = activityName + "_ViewBinding";
         try {
+            //调用构造器来实现bind
             Class.forName(genrateClass).getConstructor(activity.getClass()).newInstance(activity);
         } catch (InstantiationException | ClassNotFoundException | NoSuchMethodException e) {
             e.printStackTrace();

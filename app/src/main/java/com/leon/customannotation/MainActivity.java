@@ -10,8 +10,11 @@ import com.leon.custombutterknife.CustomButterKnife;
 
 public class MainActivity extends AppCompatActivity {
 
-    @BindView(viewId = R.id.text2)
-    TextView textView;
+    @BindView(viewId = R.id.name)
+    TextView mName;
+
+    @BindView(viewId = R.id.school)
+    TextView mSchool;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -23,8 +26,12 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if (textView != null) {
-            textView.setText("helloworld");
+        if (mName != null) {
+            mName.setText("张三");
+        }
+
+        if (mSchool != null) {
+            mSchool.setText("学校");
         }
     }
 }
