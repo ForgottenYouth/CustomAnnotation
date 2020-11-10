@@ -1,46 +1,47 @@
 package com.leon.customannotation;
 
-import androidx.appcompat.app.AppCompatActivity;
-
-import android.os.Bundle;
+import android.content.Intent;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import com.leon.annotation.BindView;
 import com.leon.annotation.ViewOnClick;
-import com.leon.custombutterknife.CustomButterKnife;
+import com.leon.customannotation.second.SecondActivity;
 
-public class MainActivity extends AppCompatActivity {
+public class MainActivity extends BaseActivity {
 
     @BindView(viewId = R.id.name)
-    protected TextView mName;
+    TextView mName;
 
     @BindView(viewId = R.id.school)
     TextView mSchool;
 
+
     @Override
-    protected void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
-        CustomButterKnife.bind(this);
+    protected int getLayoutId() {
+        return R.layout.activity_main;
     }
 
     @Override
     protected void onResume() {
         super.onResume();
         if (mName != null) {
-            mName.setText(mName.getText().toString()+"张三");
+            mName.setText(mName.getText().toString() + "张三");
         }
 
         if (mSchool != null) {
-            mSchool.setText(mSchool.getText().toString()+"学校");
+            mSchool.setText(mSchool.getText().toString() + "学校");
         }
     }
 
-    @ViewOnClick(viewId=R.id.name)
-    public void onClick(int viewId){
-        if (viewId==R.id.name){
-            Toast.makeText(this,mName.getText().toString(),Toast.LENGTH_SHORT).show();
+    @ViewOnClick(viewId = {R.id.name, R.id.school})
+    public void onClick(int viewId) {
+        if (viewId == R.id.name) {
+            Toast.makeText(this, mName.getText().toString(), Toast.LENGTH_SHORT).show();
+        }
+        if (viewId == R.id.school) {
+            Intent intent = new Intent(this, SecondActivity.class);
+            startActivity(intent);
         }
     }
 }

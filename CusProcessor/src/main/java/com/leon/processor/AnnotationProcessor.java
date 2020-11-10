@@ -36,7 +36,9 @@ public class AnnotationProcessor extends AbstractProcessor {
     private Filer filer;
     private Elements elementUtils;
 
-    private HashMap<String, List<Element>> mPackageClassSet = new HashMap<>();//存放包名+类名的集合
+    private HashMap<String, List<Element>> mPackageClassSet = new HashMap<>();//存放解析的注解节点信息   注解名-包名-类名  作为key
+
+    private HashMap<String, TypeSpec> mFilerTypeSpec = new HashMap<>();//存放生成对应文件的type info    包名-类名  作为key
 
     @Override
     public synchronized void init(ProcessingEnvironment processingEnvironment) {
@@ -60,6 +62,9 @@ public class AnnotationProcessor extends AbstractProcessor {
                     if (!mPackageClassSet.containsKey(typeElement.toString() + "-" + packageName + "-" + className)) {
                         List<Element> subelements = new ArrayList<>();
                         subelements.add(element);
+                        /*
+                        * TODO 相同注解的存在在一起，便于做方法体时使用
+                        */
                         mPackageClassSet.put(typeElement.toString() + "-" + packageName + "-" + className, subelements);
                     } else {
                         mPackageClassSet.get(typeElement.toString() + "-" + packageName + "-" + className).add(element);
@@ -75,7 +80,6 @@ public class AnnotationProcessor extends AbstractProcessor {
     private void generateCodeByJavaPoet() {
 
         Iterator entries = mPackageClassSet.entrySet().iterator();
-        List<MethodSpec> methods = new ArrayList<>();
         while (entries.hasNext()) {
             //取出hashmap的元素
             Map.Entry<String, ArrayList<Element>> entry = (Map.Entry<String, ArrayList<Element>>) entries.next();
@@ -84,11 +88,16 @@ public class AnnotationProcessor extends AbstractProcessor {
             String[] subKeys = entry.getKey().split("-");
 
             ClassName t = ClassName.bestGuess(subKeys[2]);
+
+            //用来存放创建的方法，因为如果同时存在多个注解，可以穿记得方法会比较多
+            List<MethodSpec> methods = new ArrayList<>();
             if (subKeys[0].equals(BindView.class.getTypeName())) {
                 //创建绑定view的方法
                 MethodSpec.Builder bindMethodBuilder = MethodSpec.methodBuilder("BindViewById")
                         .addModifiers(Modifier.PUBLIC)
                         .addParameter(t, "activity");
+
+
                 for (Element element : entry.getValue()) {
                     //注解上的额值
                     int resId = element.getAnnotation(BindView.class).viewId();
@@ -105,30 +114,48 @@ public class AnnotationProcessor extends AbstractProcessor {
                         .returns(void.class);
 
                 for (Element element : entry.getValue()) {
-                    int resId = element.getAnnotation(ViewOnClick.class).viewId();
-                    String stateMent = String.format("activity.findViewById(%d).setOnClickListener(new android.view.View.OnClickListener() {" +
-                            "\n @Override" +
-                            "\n public void onClick(android.view.View v) {" +
-                            "\n activity.onClick(%d);" +
-                            "\n }" +
-                            "\n })", resId, resId);
-                    onClickMethodSpecBuilder.addStatement(stateMent);
+                    int[] resId = element.getAnnotation(ViewOnClick.class).viewId();
+                    for (int i = 0; i < resId.length; i++) {
+                        String stateMent = String.format("activity.findViewById(%d).setOnClickListener(new android.view.View.OnClickListener() {" +
+                                "\n @Override" +
+                                "\n public void onClick(android.view.View v) {" +
+                                "\n activity.onClick(%d);" +
+                                "\n }" +
+                                "\n })", resId[i], resId[i]);
+                        onClickMethodSpecBuilder.addStatement(stateMent);
+                    }
                 }
                 methods.add(onClickMethodSpecBuilder.build());
             }
 
-            if (!entries.hasNext()) {
-                TypeSpec typeSpec = TypeSpec.classBuilder(String.format(subKeys[2] + "_customButterKnife"))//设置类名
-                        .addMethods(methods)
-                        .addModifiers(Modifier.PUBLIC).build();//添加修饰符
 
-                //通过包名和TypeSpec（类）生成一个java文件
-                JavaFile build = JavaFile.builder(subKeys[1], typeSpec).build();
-                try {
-                    //写入到filer中
-                    build.writeTo(filer);
-                } catch (IOException e) {
-                    e.printStackTrace();
+            /*
+             * TODO 根据类名和包名进行分组存放，便于在不各自不同的文件中存放对应的代码
+             */
+            String filerTypeKey = entry.getKey().substring(entry.getKey().indexOf("-") + 1);
+
+            if (mFilerTypeSpec.containsKey(filerTypeKey)) {
+                TypeSpec typeSpec = mFilerTypeSpec.get(filerTypeKey).toBuilder().addMethods(methods).build();
+                mFilerTypeSpec.put(filerTypeKey, typeSpec);
+            } else {
+                TypeSpec typeSpec = TypeSpec.classBuilder(String.format(subKeys[2] + "_customButterKnife"))//设置类名
+                        .addModifiers(Modifier.PUBLIC).build();//添加修饰符
+                typeSpec = typeSpec.toBuilder().addMethods(methods).build();
+                mFilerTypeSpec.put(filerTypeKey, typeSpec);
+            }
+
+            if (!entries.hasNext()) {
+                //通过包名-类名和TypeSpec（类）生成一个java文件
+                Set<String> keySet = mFilerTypeSpec.keySet();
+                for (String key : keySet) {
+                    String[] split = key.split("-");
+                    JavaFile build = JavaFile.builder(split[0], mFilerTypeSpec.get(key)).build();
+                    try {
+                        //写入到filer中
+                        build.writeTo(filer);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }
