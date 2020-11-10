@@ -29,11 +29,11 @@ public class MainActivity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         if (mName != null) {
-            mName.setText("张三");
+            mName.setText(mName.getText().toString()+"张三");
         }
 
         if (mSchool != null) {
-            mSchool.setText("学校");
+            mSchool.setText(mSchool.getText().toString()+"学校");
         }
     }
 
