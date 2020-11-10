@@ -4,6 +4,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.os.Bundle;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.leon.annotation.BindView;
 import com.leon.annotation.ViewOnClick;
@@ -12,7 +13,7 @@ import com.leon.custombutterknife.CustomButterKnife;
 public class MainActivity extends AppCompatActivity {
 
     @BindView(viewId = R.id.name)
-    TextView mName;
+    protected TextView mName;
 
     @BindView(viewId = R.id.school)
     TextView mSchool;
@@ -38,6 +39,8 @@ public class MainActivity extends AppCompatActivity {
 
     @ViewOnClick(viewId=R.id.name)
     public void onClick(int viewId){
-
+        if (viewId==R.id.name){
+            Toast.makeText(this,mName.getText().toString(),Toast.LENGTH_SHORT).show();
+        }
     }
 }

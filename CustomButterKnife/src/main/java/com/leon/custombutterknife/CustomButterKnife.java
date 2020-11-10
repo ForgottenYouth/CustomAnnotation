@@ -8,6 +8,7 @@ package com.leon.custombutterknife;
 import android.app.Activity;
 
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 public class CustomButterKnife {
 
@@ -16,9 +17,23 @@ public class CustomButterKnife {
         String genrateClass = activityName + "_customButterKnife";
         try {
             //调用构造器来实现bind
-            Class.forName(genrateClass).getConstructor(activity.getClass()).newInstance(activity);
+            Object inject = Class.forName(genrateClass).getConstructor().newInstance();
 
-            Class.forName(genrateClass).getDeclaredMethod(activityName+"_viewOnclick").setAccessible(true);
+            /*
+             * TODO 调用生成的java类进行onclick事件的注解绑定
+             */
+            if (null != inject) {
+                Method bindViewByIdMethond = inject.getClass().getDeclaredMethod("BindViewById", activity.getClass());
+                bindViewByIdMethond.invoke(inject, activity);
+            }
+
+            /*
+             * TODO 调用生成的java类进行onclick事件的注解绑定
+             */
+            if (null != inject) {
+                Method bindViewOnClickMethod = inject.getClass().getDeclaredMethod("BindViewOnClick", activity.getClass());
+                bindViewOnClickMethod.invoke(inject, activity);
+            }
         } catch (InstantiationException | ClassNotFoundException | NoSuchMethodException e) {
             e.printStackTrace();
         } catch (IllegalAccessException e) {
