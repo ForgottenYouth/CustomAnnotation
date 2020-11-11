@@ -5,6 +5,7 @@
  */
 package com.leon.customannotation.second;
 
+import android.content.Intent;
 import android.widget.Button;
 import android.widget.Toast;
 
@@ -12,6 +13,7 @@ import com.leon.annotation.BindView;
 import com.leon.annotation.ViewOnClick;
 import com.leon.customannotation.BaseActivity;
 import com.leon.customannotation.R;
+import com.leon.customannotation.inject.InjectActivity;
 
 public class SecondActivity extends BaseActivity {
 
@@ -28,6 +30,8 @@ public class SecondActivity extends BaseActivity {
     public void onClick(int viewId) {
         if (viewId == R.id.second_btn) {
             Toast.makeText(this, "您点了第一个页面的按钮", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(this, InjectActivity.class);
+            startActivity(intent);
         }
     }
 }

@@ -32,5 +32,6 @@ dependencies {
     implementation 'com.squareup:javapoet:1.7.0'
     annotationProcessor project(":CusProcessor")
     api project (':CustomButterKnife')
+    implementation project (':CusInject')
 
 }

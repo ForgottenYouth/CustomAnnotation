@@ -16,6 +16,7 @@
             </intent-filter>
         </activity>
         <activity android:name=".second.SecondActivity" />
+        <activity android:name=".inject.InjectActivity" />
     </application>
 
 </manifest>
